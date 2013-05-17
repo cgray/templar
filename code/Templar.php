@@ -17,6 +17,10 @@ class Templar {
     
     protected $templatePaths;
     
+    protected static $emulateShortEchoTags = false;
+    
+    protected static $templatePreprocessor;
+    
     protected function __construct(){
         $this->templateCache = array();
         $this->templatePaths = array();
@@ -36,6 +40,25 @@ class Templar {
     }
     
     /**
+     * Set if we should expland <?= to <?php echo
+     *
+     * @param boolean $val
+     * @return void
+     **/
+    public static function setEmulateShortEchoTags(bool $val){
+        self::$emulateShortEchoTags = $val;
+    }
+
+    /**
+     * Determine value of short echo tag emulation
+     *
+     * @return boolean
+     **/ 
+    public static function getEmulateShortEchoTags(){
+        return self::$emulateShortEchoTags;
+    }
+    
+    /**
      * Add a directory to the path cache
      *
      * @param string $path The path to the template
@@ -48,6 +71,27 @@ class Templar {
         // if the path doesn't exist the fail silently
         if (file_exists($path)){
             $this->templatePaths[] = $path;
+        }
+    }
+    
+    /**
+     * Add Template Paths to the template
+     *
+     * @param array $paths
+     *
+     **/
+    
+    public function addTemplatePaths($paths){
+        foreach($paths as $path){
+            $this->addTemplatePath($path);
+        }
+    }
+    
+    public function setTemplatePreprocessor($preprocessor){
+        if(is_callable($preprocessor)){
+            self::$templatePreprocessor = $preprocessor;
+        } else {
+            throw new Templar_Exception("Argument supplied to setTemplateProcessor is not callable [" . gettype($processor). print_r($processor, true) . "]");
         }
     }
     
@@ -77,7 +121,25 @@ class Templar {
             }
             
         }
-        $code = 'is_array($data) && extract($data); ?>' . file_get_contents($targetPath) . '<?php '; 
+        
+        
+        $templateSource = trim(file_get_contents($targetPath));
+        
+        // if there is a template pre processor, if so then preprocess
+        if (self::$templatePreprocessor){
+            $tpp = self::$templatePreprocessor;
+            $templateSource = $tpp($templateSource);
+        }
+        
+        // check to see if we should expand short tags
+        if (self::getEmulateShortEchoTags()){
+            $templateSource = str_replace('<?=', '<?php echo ', $templateSource);
+        }
+        if (substr($templateSource, -2) != '?>'){
+            $templateSource.= '?>';
+        }
+        
+        $code = 'extract($data); ?>' . $templateSource . '<?php '; 
         
         $func = create_function('$data = array()', $code);
         
