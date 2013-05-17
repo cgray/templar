@@ -95,7 +95,7 @@ class Templar {
      * @param string $path The Path to the Template
      * @return Callable The template function
      **/
-    public function getTemplate($path){
+    public function getTemplateFunction($path){
         if (!array_key_exists($path, $this->templateCache)){
             $this->createTemplate($path);
         }
@@ -123,7 +123,7 @@ class Templar {
      *  @return string The renderer Template
      **/
     public static function display($template, $data = array()){
-        $tmplFunction = self::getInstance()->getTemplate($template);
+        $tmplFunction = self::getInstance()->getTemplateFunction($template);
         $tmplFunction($data);
     }
 }
