@@ -6,7 +6,7 @@ require_once("../code/Templar/Exception.php");
 $tmpl = Templar::getInstance();
 $tmpl->addTemplatePath("templates");
 
-$func = $tmpl->getTemplate("simple_test.phtml");
+$func = $tmpl->getTemplateFunction("simple_test.phtml");
 
 $func("Chris");
 

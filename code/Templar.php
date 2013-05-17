@@ -77,7 +77,7 @@ class Templar {
             }
             
         }
-        $code = 'if (is_array($data)) {foreach($data as $k=>$v){${$k} = $v;}}  ?>' . file_get_contents($targetPath) . '<?php '; 
+        $code = 'is_array($data) && extract($data); ?>' . file_get_contents($targetPath) . '<?php '; 
         
         $func = create_function('$data = array()', $code);
         
