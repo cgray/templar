@@ -125,36 +125,6 @@ class Templar {
         }
         $template = new Templar_Template($this, include('templar.template://'.$targetPath));
         $this->templateCache[$path] = $template;
-        print "HELLO";
-        /*
-        $templateSource = trim(file_get_contents($targetPath));
-        
-        // if there is a template pre processor, if so then preprocess
-        if ($this->templatePreprocessor){
-            $tpp = $this->templatePreprocessor;
-            $templateSource = $tpp($templateSource);
-        }
-        
-        // check to see if we should expand short tags
-        if (self::getEmulateShortEchoTags()){
-            $templateSource = str_replace('<?=', '<?php echo ', $templateSource);
-        }
-        if (substr($templateSource, -2) != '?>'){
-            $templateSource.= '?>';
-        }
-        
-        $code = 'extract($data); ?>' . $templateSource . '<?php '; 
-        
-        $func = create_function('$data = array()', $code);
-        
-        
-        if (!$func){
-            throw new Templar_Exception("Could not parse template [" . $targetPath . "]");
-        }
-        // add to the templateCache
-        $this->templateCache[$path] = $func;
-        */
-        
     }
     
     /**
