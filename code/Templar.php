@@ -15,10 +15,6 @@ class Templar {
     
     protected $templatePaths;
     
-    protected static $emulateShortEchoTags = false;
-    
-    protected $templatePreprocessor;
-    
     public function __construct(){
         $this->templateCache = array();
         $this->templatePaths = array();
@@ -30,26 +26,6 @@ class Templar {
         
     }
     
-
-    /**
-     * Set if we should expand <?= to <?php echo
-     *
-     * @param boolean $val
-     * @return Templar fluent interface
-     **/
-    public static function setEmulateShortEchoTags(bool $val){
-        self::$emulateShortEchoTags = $val;
-        return $this;
-    }
-
-    /**
-     * Determine value of short echo tag emulation
-     *
-     * @return boolean
-     **/ 
-    public static function getEmulateShortEchoTags(){
-        return self::$emulateShortEchoTags;
-    }
     
     /**
      * Add a directory to the path cache
@@ -82,19 +58,6 @@ class Templar {
     }
     
     
-    /**
-     * Sets the preprocessor
-     *
-     * @param callable $preprocessor;
-     * @return Templar fluent interface
-     **/
-    public function setTemplatePreprocessor($preprocessor){
-        if(is_callable($preprocessor)){
-            $this->templatePreprocessor = $preprocessor;
-        } else {
-            throw new Templar_Exception("Argument supplied to setTemplateProcessor is not callable [" . gettype($processor). print_r($processor, true) . "]");
-        }
-    }
     
     /**
      * Creates a template function

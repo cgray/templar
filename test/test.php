@@ -11,5 +11,4 @@ $tmpl->addTemplatePath("templates");
 
 // Static Invokation
 
-$tmpl->setTemplatePreprocessor(function($str){return str_replace("Hello", "Hola", $str);});
 $tmpl->display("simple_test.phtml", array("fname"=>"Chris"));
