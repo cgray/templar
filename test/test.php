@@ -2,14 +2,14 @@
 
 require_once("../code/Templar.php");
 require_once("../code/Templar/Exception.php");
+require_once("../code/Templar/Template.php");
+require_once("../code/Templar/StreamWrapper.php");
 
-$tmpl = Templar::getInstance();
+$tmpl = new Templar();
 $tmpl->addTemplatePath("templates");
 
-$func = $tmpl->getTemplateFunction("simple_test.phtml");
-
-$func("Chris");
 
 // Static Invokation
 
-Templar::display("simple_test.phtml", "Chris");
+$tmpl->setTemplatePreprocessor(function($str){return str_replace("Hello", "Hola", $str);});
+$tmpl->display("simple_test.phtml", array("fname"=>"Chris"));

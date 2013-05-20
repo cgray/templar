@@ -12,41 +12,34 @@
 class Templar {
 
     protected  $templateCache;
-
-    protected static $instance;
     
     protected $templatePaths;
     
     protected static $emulateShortEchoTags = false;
     
-    protected static $templatePreprocessor;
+    protected $templatePreprocessor;
     
-    protected function __construct(){
+    public function __construct(){
         $this->templateCache = array();
         $this->templatePaths = array();
         
-    }
-    
-    /**
-     * Return singlton instance
-     *
-     * @return Templar The template Engine.
-     **/
-    public static function getInstance(){
-        if (!isset(self::$instance)) {
-            self::$instance = new self();
+        // make sure the stream wrapper is registered
+        if (!in_array("templar.template", stream_get_wrappers())){
+            stream_register_wrapper("templar.template", "Templar_StreamWrapper");
         }
-        return self::$instance;
+        
     }
     
+
     /**
-     * Set if we should expland <?= to <?php echo
+     * Set if we should expand <?= to <?php echo
      *
      * @param boolean $val
-     * @return void
+     * @return Templar fluent interface
      **/
     public static function setEmulateShortEchoTags(bool $val){
         self::$emulateShortEchoTags = $val;
+        return $this;
     }
 
     /**
@@ -62,6 +55,7 @@ class Templar {
      * Add a directory to the path cache
      *
      * @param string $path The path to the template
+     * @return Templar fluent interface
      **/
     public function addTemplatePath($path){
         // Make sure the directory ends in exactly one DIRECTORY_SEPARATOR
@@ -72,24 +66,31 @@ class Templar {
         if (file_exists($path)){
             $this->templatePaths[] = $path;
         }
+        return $this;
     }
     
     /**
      * Add Template Paths to the template
      *
      * @param array $paths
-     *
-     **/
-    
+     * @return Templar fluent interface
+     **/   
     public function addTemplatePaths($paths){
         foreach($paths as $path){
             $this->addTemplatePath($path);
         }
     }
     
+    
+    /**
+     * Sets the preprocessor
+     *
+     * @param callable $preprocessor;
+     * @return Templar fluent interface
+     **/
     public function setTemplatePreprocessor($preprocessor){
         if(is_callable($preprocessor)){
-            self::$templatePreprocessor = $preprocessor;
+            $this->templatePreprocessor = $preprocessor;
         } else {
             throw new Templar_Exception("Argument supplied to setTemplateProcessor is not callable [" . gettype($processor). print_r($processor, true) . "]");
         }
@@ -99,19 +100,20 @@ class Templar {
      * Creates a template function
      *
      * @param string $path The path to the template
-     * @return the compiled function
+     * @return callable the compiled function
      * @throws Templar_Exception if the template can't be found or parsed
      **/
     protected function createTemplate($path){
+        // Jail the template resolution to directories under the template directories - per Sébastien Renauld @ Stackoverflow
         // Make sure template exist in one of the template directories -- no ../ paths
-        if (strpos("..", $path) !== false) {
+        if (strpos("..", $path) !== false || strpos("//", $path) !== false) {
             throw new Templar_Exception("Templates must exist in one of the template directories");
         }
         $path = ltrim($path, DIRECTORY_SEPARATOR);
         if (!file_exists($path)) {
             foreach($this->templatePaths as $testPath){
                 if (file_exists($testPath . $path)){
-                    $targetPath = $testPath . $path;
+                    $targetPath = realpath($testPath . $path);
                     break; // break out of if and foreach;
                 }
             }
@@ -121,13 +123,15 @@ class Templar {
             }
             
         }
-        
-        
+        $template = new Templar_Template($this, include('templar.template://'.$targetPath));
+        $this->templateCache[$path] = $template;
+        print "HELLO";
+        /*
         $templateSource = trim(file_get_contents($targetPath));
         
         // if there is a template pre processor, if so then preprocess
-        if (self::$templatePreprocessor){
-            $tpp = self::$templatePreprocessor;
+        if ($this->templatePreprocessor){
+            $tpp = $this->templatePreprocessor;
             $templateSource = $tpp($templateSource);
         }
         
@@ -149,6 +153,8 @@ class Templar {
         }
         // add to the templateCache
         $this->templateCache[$path] = $func;
+        */
+        
     }
     
     /**
@@ -171,9 +177,9 @@ class Templar {
      *  @param array $data
      *  @return string The renderer Template
      **/
-    public static function render($template, $data = array()){
+    public function render($template, $data = array()){
         ob_start();
-        self::display($template, $data);
+        $this->display($template, $data);
         return ob_get_clean();
     }
     
@@ -184,11 +190,8 @@ class Templar {
      *  @param array $data
      *  @return string The renderer Template
      **/
-    public static function display($template, $data = array()){
-        $tmplFunction = self::getInstance()->getTemplateFunction($template);
+    public function display($template, $data = array()){
+        $tmplFunction = $this->getTemplateFunction($template);
         $tmplFunction($data);
     }
 }
- 
-
- 
