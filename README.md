@@ -1,27 +1,81 @@
 TEMPLAR
 =======
-"The PHP as a PHP Templating Engine"
+"The PHP as a Template" PHP Template Processor
 ------------
 
 Template Syntax
 ----------
 
-    <div>Hello <?php echo $who ?>!</div>
+    <div>Hello <?= $who ?>!</div>
 
-Invokation
+Invocation
 ----------
 
     Templar::display("/path/to/template.phtml", array("who"=>"Ladies"));
 
 or
-    Templar::render("/path/to/template.phtml", array("who"=>"Gentlemen"));
+
+    echo Templar::render("/path/to/template.phtml", array("who"=>"Gentlemen"));
 
 or
 
     $func = Templar::getInstance()->getTemplateFunction("/path/to/template.phtml");
-    echo $func(array("who"=>"Girls &amp; Bodys");
+    $func(array("who"=>"Girls &amp; Bodys");
 
-Thats right functions. Internally Templar works by creating a function out of your template and caching a reference to it. This will bypass the file system hit for template partials that are reused, say like if you
-had a template for one of your rows for a table and we wanted to echo out 1000 database records using that template. The method of just including a file would result in 1000 file system hits. Templar can name that tune in 1. 
+When you call `Templar::display` an internal function cache is examined to see if there 
+is a function for the requested template. If not one is created. So the above template your template
+gets turned into:
 
-Based on a simple template templar showed a 750% speed increase and a 49% drop in peak memory usage.  
+    function lambda_1($__data){extract($__data); unset($__data); ?><div>Hello <?= $who ?>!</div><?php}
+
+And cached into the template function registry. All subsequent requests for that template reuse this function.
+
+Example
+----------
+
+Take this example for a more real world example:
+
+__product-list.phtml__
+
+    <table class="product-grid">
+        <?php 
+            foreach($products as $product){
+                Templar::display("product-row.phtml", $product);
+            } 
+        ?>
+    </table>
+    
+__product-row.phtml__
+
+    <tr><td><?= $id ?></td><td><?= $sku ?></td><td><?= $product_name ?></td><td><?= $sale_price ?></td></tr>
+    
+__Controller__
+    
+    $this->view->assign("products", $product) = $productTable->getProducts();
+    
+__View__
+
+    <div class='box widget'>
+    <?php Templar::display("/templates/product-row.phtml", $product); ?>
+    </div>
+
+API 
+----------
+
+**Templar Templar::getInstance()** - For good of for bad implemented as a singleton, for ease in configuration during bootstrap.
+
+**Templar Templar::setEmulateShortEchoTags(boolean)** - Determines if we should replace all occurances of `<?=` with `<?php echo `
+
+**boolean Templar::getEmulateShortEchoTags()** - Get the short tag emulation setting.
+
+**callable Templar->getTemplateFunction(string path)** - get or create and get a function to render template
+
+**string Template::render(array $data)** - render data to string
+
+**void Template::display(array $data)** - render data to the output
+
+**Templar Templar::addTemplatePath(string $path)** - add a directory to the template path array
+
+**Templar Templar::addTemplatePaths(array $paths)** - adds an array of paths to the template path array
+
+**Templar Templar::setTemplatePreprocessor(callable $preprocessor)** - filter contents of function prior to creating.
