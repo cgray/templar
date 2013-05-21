@@ -26,7 +26,6 @@ class Templar {
         
     }
     
-    
     /**
      * Add a directory to the path cache
      *
@@ -35,7 +34,7 @@ class Templar {
      **/
     public function addTemplatePath($path){
         // Make sure the directory ends in exactly one DIRECTORY_SEPARATOR
-        
+    
         $path = rtrim($path,DIRECTORY_SEPARATOR).DIRECTORY_SEPARATOR;
         
         // if the path doesn't exist the fail silently
@@ -57,8 +56,6 @@ class Templar {
         }
     }
     
-    
-    
     /**
      * Creates a template function
      *
@@ -68,10 +65,10 @@ class Templar {
      **/
     protected function createTemplate($path){
         // Jail the template resolution to directories under the template directories - per Sébastien Renauld @ Stackoverflow
-        // Make sure template exist in one of the template directories -- no ../ paths
-        if (strpos("..", $path) !== false || strpos("//", $path) !== false) {
-            throw new Templar_Exception("Templates must exist in one of the template directories");
-        }
+        // Make sure template exist in one of the template directories -- no ../ paths and no // 
+        if (strpos($path, "..") !== false || strpos($path, "//") !== false) {
+            throw new Templar_Exception("Templates must exist in one of the template directories [".$path."]");
+        } 
         $path = ltrim($path, DIRECTORY_SEPARATOR);
         if (!file_exists($path)) {
             foreach($this->templatePaths as $testPath){
@@ -110,10 +107,8 @@ class Templar {
      *  @param array $data
      *  @return string The renderer Template
      **/
-    public function render($template, $data = array()){
-        ob_start();
-        $this->display($template, $data);
-        return ob_get_clean();
+    public function renderTemplate($template, $data = array()){
+        return $this->getTemplateFunction($template)->render($data);
     }
     
     /**
@@ -123,8 +118,7 @@ class Templar {
      *  @param array $data
      *  @return string The renderer Template
      **/
-    public function display($template, $data = array()){
-        $tmplFunction = $this->getTemplateFunction($template);
-        $tmplFunction($data);
+    public function displayTemplate($template, $data = array()){
+        $this->getTemplateFunction($template)->display($data);
     }
 }

@@ -11,4 +11,5 @@ $tmpl->addTemplatePath("templates");
 
 // Static Invokation
 
-$tmpl->display("simple_test.phtml", array("fname"=>"Chris"));
+//$tmpl->displayTemplate("simple_test.phtml", array("fname"=>"Chris"));
+$tmpl->displayTemplate("simple_test.phtml", array("fname"=>"Chris"));

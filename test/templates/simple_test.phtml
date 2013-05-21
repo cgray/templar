@@ -3,7 +3,6 @@
 /*** TEST WITH COMMENTS
  */
 ?>
-Hello <?= $fname ?>
-<pre>
-    <?php print_r($this); ?>
-</pre>
+Hello <?= $fname ?> <?php $this->displayTemplate("date.phtml", array()); ?>
+
+
