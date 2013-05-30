@@ -1,0 +1,16 @@
+<?php
+    /**
+     *  @package Templar
+     *  @subpackage Core Helpers
+     *
+     *  formInput
+     *
+     *  create a text input.
+     *
+     *  @uses html_attributs.phtml
+     **/  
+
+    foreach ($attributes as $k => $v) {
+        echo $k, "=\"", htmlspecialchars($v), "\" ";
+    }
+?>

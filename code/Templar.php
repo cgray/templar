@@ -15,9 +15,12 @@ class Templar {
     
     protected $templatePaths;
     
+    protected $viewHelpers;
+    
     public function __construct(){
         $this->templateCache = array();
-        $this->templatePaths = array();
+        $this->templatePaths = array(__DIR__."/Templar/helpers/");
+        $this->viewHelpers = array();
         
         // make sure the stream wrapper is registered
         if (!in_array("templar.template", stream_get_wrappers())){
@@ -70,6 +73,7 @@ class Templar {
             throw new Templar_Exception("Templates must exist in one of the template directories [".$path."]");
         } 
         $path = ltrim($path, DIRECTORY_SEPARATOR);
+        $targetPath = null;
         if (!file_exists($path)) {
             foreach($this->templatePaths as $testPath){
                 if (file_exists($testPath . $path)){
@@ -121,4 +125,42 @@ class Templar {
     public function displayTemplate($template, $data = array()){
         $this->getTemplateFunction($template)->display($data);
     }
+    
+    /**
+     * Bind a template to be used as a view helper
+     *
+     * No heroic measures will be taken to make sure that the template exists.
+     * This will error at at the first call to createTemplate
+     *
+     * @param string $template the template that implements the code.
+     * @param array $params list of arguments for the template
+     **/
+    public function defineViewHelper($name, $template, $params){
+        //echo "defined $name as $template ", print_r($params, true);
+        $this->viewHelpers[$name] = array($template, $params);
+    }
+    
+    /**
+     * Call a view helper
+     *
+     * @param string $name the name of a previously registered view helper
+     * @param array $data The parameters for the view helper
+     * @return void
+     **/
+    public function callViewHelper($name, $data){
+        if (array_key_exists($name, $this->viewHelpers)){
+            if (count($data) == count($this->viewHelpers[$name][1])){
+                
+            } elseif (count($data)< count($this->viewHelpers[$name][1])){
+                $data = array_pad($data, count($this->viewHelpers[$name][1]), "");
+            } else {
+                $data = array_slice($data, 0, count($this->viewHelpers[$name][1]));
+            }
+            $this->displayTemplate($this->viewHelpers[$name][0], array_combine($this->viewHelpers[$name][1], $data));
+        } else {
+            throw new Templar_Exception("Call to undefined view helper [".$name."]");
+        }
+    }
+    
+ 
 }

@@ -1,0 +1,17 @@
+<?php
+    /**
+     *  @package Templar
+     *  @subpackage Core Helpers
+     *
+     *  formInput
+     *
+     *  create a text input.
+     *
+     *  @uses html_attributs.phtml
+     **/  
+?>
+<input type='text' <?php
+    if (is_array($attr)){
+        $this->htmlAttributes($attr);    
+    }
+?> name='<?= htmlspecialchars($name) ?>' value='<? htmlspecialchars($value) ?>'/>

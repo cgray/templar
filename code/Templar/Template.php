@@ -43,4 +43,8 @@
         public function displayTemplate($template, $data = array()){
             $this->processor->displayTemplate($template, $data);
         }
+        
+        public function __call($name, $args){
+            return $this->processor->callViewHelper($name, $args);
+        }
     }
