@@ -29,6 +29,7 @@ Example
 Take this example for a more real world example:
 
 __product-list.phtml__
+
     <?php
        $tmpl = new Templar();
        $tmpl->addTemplateDirectory(APPLICATION_PATH."/templates/");
